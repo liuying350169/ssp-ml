@@ -27,11 +27,14 @@ class TensorSparkWorker(Borg):
     @gen.coroutine
     def init_websocket(self):
         self.websock = yield tornado.websocket.websocket_connect(
-            "ws://%s:%d" % (config.MASTER_IP, self.websocket_port),
-            connect_timeout=3600)
+            "ws://%s:%d/" % (config.MASTER_IP, self.websocket_port),
+            #"ws://52.26.64.207:50505/",
+            connect_timeout=5)
 
     def train_partition(self, partition):
+        with open('/home/ubuntu/blah.txt', 'w') as f: f.write('hi')
         while True:
+            #with open('/home/ubuntu/blah.txt', 'a') as f: f.write('hello')
             labels, features = self.model.process_partition(partition)
 
             if len(labels) is 0:

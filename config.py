@@ -8,9 +8,9 @@ SPARK_MASTER_PORT = 7077
 SPARK_APP_NAME = 'Herp Derp'
 HDFS_PORT = 9000
 HDFS_DIRECTORY = '/mnist/'
-LOCAL_DIRECTORY = "/home/ubuntu/"
-ERROR_RATES_PATH = "/home/ubuntu/errors.txt"
-WEBSOCKET_PORT = 30303  # random.randint(30000, 60000)
+LOCAL_DIRECTORY = "/home/ubuntu/ssp-ml/"
+ERROR_RATES_PATH = "/home/ubuntu/ssp-ml/errors.txt"
+WEBSOCKET_PORT = 8123  # random.randint(30000, 60000)
 MODEL_KEYWORD = 'mnist'
 
 if MODEL_KEYWORD == 'mnist':
@@ -19,10 +19,11 @@ if MODEL_KEYWORD == 'mnist':
     TEST_FILENAME = ('hdfs://%s:%d' % (MASTER_IP, HDFS_PORT)) + \
         os.path.join(HDFS_DIRECTORY, 'mnist_test.csv')
     LOCAL_TEST_PATH = os.path.join(LOCAL_DIRECTORY, 'mnist_test.csv')
-    NUM_PARTITIONS = 48
+    NUM_PARTITIONS = 3
     NUM_EPOCHS = 2
     WARMUP = 2000
     BATCH_SIZE = 50
+    #BATCH_SIZE = 0
     EPOCHS = 5
     REPARTITION = True
     TIME_LAG = 100

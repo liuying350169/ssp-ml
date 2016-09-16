@@ -68,8 +68,10 @@ class ParameterServer(threading.Thread):
             self.model.process_data(test_data)
         self.warmup(warmup_data)
         self.gradient_count = 0
+        print('debug parameterserver')
         self.application = tornado.web.Application(
             [(r'/', ParameterServerWebsocketHandler, {'server': self})])
+        print('debug parameterserver.init2')
 
     def warmup(self, data=None):
         if data is not None:
@@ -78,7 +80,9 @@ class ParameterServer(threading.Thread):
 
     def run(self):
         self.application.listen(config.WEBSOCKET_PORT)
+        print('listen worked?')
         tornado.ioloop.IOLoop.current().start()
+        print('tornado start worked?')
 
 def train_partition(partition):
     return parameterserverwebsocketclient.TensorSparkWorker(
@@ -95,7 +99,7 @@ def train_epochs(num_epochs, training_rdd, num_partitions):
             training_rdd = training_rdd.repartition(num_partitions)
         mapped_training = training_rdd.mapPartitions(train_partition)
         # mapped_training should return `num_partitions` []'s
-        mapped_training.take(10)
+        mapped_training.take(3)
 
 def test_all_partitions(sc):
     testing_rdd = sc.textFile(config.TEST_FILENAME).cache()
@@ -127,6 +131,8 @@ try:
     parameter_server = ParameterServer(config.MODEL,
         warmup_data,
         test_data)
+    #parameter_server.run()
+    parameter_server.start()
 
     train_epochs(config.NUM_EPOCHS, training_rdd, config.NUM_PARTITIONS)
 

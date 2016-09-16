@@ -22,7 +22,7 @@ class MnistDNN(ParameterServerModel):
         #self.batch_size = batch_size
         input_units = 784
         output_units = 10
-        hidden_units = 700
+        hidden_units = 100  #700
 
         x = tf.placeholder('float32', shape=[None, input_units], name='x')
         true_y = tf.placeholder('float32', shape=[None, output_units], name='y')
@@ -55,7 +55,7 @@ class MnistDNN(ParameterServerModel):
         features = []
         labels = []
         if batch_size == 0:
-            batch_size = len(data)
+            batch_size = 1000000
         for line in data:
             if len(line) is 0:
                 print('Skipping empty line')
@@ -81,10 +81,12 @@ class MnistDNN(ParameterServerModel):
         print('batch size = %d' % batch_size)
         num_classes = self.get_num_classes()
         features = []
-        labels = [0] * num_classes
+        labels = []
+        label = [0] * num_classes
         if batch_size == 0:
             batch_size = 1000000
         for i in range(batch_size):
+            print('i = %d' % i)
             try:
                 line = partition.next()
                 if len(line) is 0:
