@@ -1,11 +1,13 @@
 # tensorspark.py
 import config
+import parameterwebsocketclient
 from operator import add
 import tornado.web
 import tornado.websocket
 import tornado.ioloop
 import threading
 import tensorflow as tf
+import pyspark
 
 
 class ParameterServerWebsocketHandler(tornado.websocket.WebSocketHandler):
@@ -47,7 +49,10 @@ class ParameterServerWebsocketHandler(tornado.websocket.WebSocketHandler):
             self.lock.release()
         else:
             print("rejected")
+        del time_gradient
+        self.send_parameters()
 
+    def send_parameters(self):
         # Send the (updated?) parameters to the client
         self.lock.acquire()
         parameters = self.model.get_parameters()
@@ -91,9 +96,40 @@ def train_epochs(num_epochs, training_rdd, num_partitions):
         if REPARTITION:
             training_rdd = training_rdd.repartition(num_partitions)
         mapped_training = training_rdd.mapPartitions(train_partition)
+        # mapped_training should return `num_partitions` []'s
         mapped_training.take(10)
 
 def test_all_partitions(sc):
     testing_rdd = sc.textFile(config.TEST_FILENAME).cache()
     mapped_testing = testing_rdd.mapPartitions(test_partition)
+    # mapped_testing should return `num_partitions` [error_rate]'s
     return mapped_testing.reduce(add)
+
+
+conf = pyspark.SparkConf() \
+    .setMaster("spark://%s:%d" %
+        (config.SPARK_MASTER_IP, config.SPARK_MASTER_PORT))
+    .setAppName(config.SPARK_APP_NAME)
+sc = pyspark.SparkContext()
+try:
+    training_rdd = sc.textFile(config.TRAINING_RDD_FILENAME)
+    print('num partitions = %s' % training_rdd.getNumPartitions())
+
+    warmup_data = training_rdd.take(config.WARMUP)
+
+    with open(config.LOCAL_TEST_PATH, 'r') as test_file:
+        test_data_lines = test_file.readlines()
+
+    with open(config.ERROR_RATES_PATH, 'w') as f:
+        f.write('')
+
+    test_data = test_data_lines[0 : 100]
+
+    parameter_server = ts.ParameterServer(config.MODEL,
+        warmup_data,
+        test_data)
+
+    ts.train_epochs(config.NUM_EPOCHS, training_rdd, config.NUM_PARTITIONS)
+
+finally:
+    tornado.ioloop.IOLoop.current().stop()

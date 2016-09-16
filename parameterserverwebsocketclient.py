@@ -26,7 +26,7 @@ class TensorSparkWorker(Borg):
     @gen.coroutine
     def init_websocket(self):
         self.websock = yield tornado.websocket.websocket_connect(
-            "ws://SLDKFJSLKDFJSLKDFJS:%d" % self.websocket_port,
+            "ws://%s:%d" % (config.MASTER_IP, self.websocket_port),
             connect_timeout=3600)
 
     def train_partition(self, partition):
@@ -45,7 +45,8 @@ class TensorSparkWorker(Borg):
             if self.time_to_push(self.iteration):
                 self.push_gradients()
 
-        return []  # ???
+        # "null" value (Spark Master doesn't care about what it returns)
+        return []
 
     def test_partition(self, partition):
         labels, features = self.model.process_partition(partition)

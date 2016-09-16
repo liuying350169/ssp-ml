@@ -70,12 +70,16 @@ class MnistDNN(ParameterServerModel):
 
         return labels, features
 
+    """
+    Doesn't do mini-batch, just loads (on each partition) `batch_size` number
+    of data.
+    """
     def process_partition(self, partition):
         batch_size = self.batch_size
         print('batch size = %d' % batch_size)
         num_classes = self.get_num_classes()
         features = []
-        labels = []
+        labels = [0] * num_classes
         if batch_size == 0:
             batch_size = 1000000
         for i in range(batch_size):
@@ -84,15 +88,15 @@ class MnistDNN(ParameterServerModel):
                 if len(line) is 0:
                     print('Skipping empty line')
                     continue
-                label = [0] * num_classes
                 split = line.split(',')
-                split[0] = int(split[0])
-                if split[0] >= num_classes:
-                    print('Error label out of range: %d' % split[0])
+                split0 = int(split[0])
+                if split0 >= num_classes:
+                    print('Error label out of range: %d' % split0)
                     continue
-                features.append(split[1:])
-                label[split[0]] = 1
+                features.append([int(s) for s in split[1:]])
+                label[split0] = 1
                 labels.append(label)
+                label[split0] = 0
             except StopIteration:
                 break
 
