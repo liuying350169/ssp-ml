@@ -42,12 +42,14 @@ class TensorSparkWorker(Borg):
 
             if self.time_to_pull(self.iteration):
                 self.request_parameters()
-
+            print('starting training')
             self.model.train(labels, features)
+            print('done training small batch')
             self.iteration += 1
 
             if self.time_to_push(self.iteration):
                 self.push_gradients()
+            print('blahg')
 
         # "null" value (Spark Master doesn't care about what it returns)
         return []
@@ -80,7 +82,7 @@ class TensorSparkWorker(Borg):
         return iteration % 5 == 0
 
     def push_gradients(self):
-        IOLoop.current().run_sync(self.request_parameters_coroutine)
+        IOLoop.current().run_sync(self.push_gradients_coroutine)
 
     @gen.coroutine
     def push_gradients_coroutine(self):

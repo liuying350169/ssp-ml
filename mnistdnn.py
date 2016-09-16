@@ -104,5 +104,5 @@ class MnistDNN(ParameterServerModel):
                 label[split0] = 0
             except StopIteration:
                 break
-
+        print('done getting lalbels')
         return labels, features
