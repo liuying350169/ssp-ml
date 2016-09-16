@@ -21,7 +21,7 @@ class ParameterServerModel():
         self.session = session
         self.batch_size = batch_size
         self.graph = session.graph
-        #self.session.graph.as_default().__enter__()
+        self.session.graph.as_default().__enter__()
         self.x = x
         self.y = y
         self.compute_gradients = compute_gradients
@@ -44,42 +44,42 @@ class ParameterServerModel():
 
     def train(self, labels, features):
         with self.session.as_default():
-            with self.graph.as_default():
-                feed = { self.x: features, self.y: labels }
-                for i in range(len(self.compute_gradients)):
-                    self.gradients[i] += self.compute_gradients[i][0].eval(
-                        feed_dict=feed)
+            #with self.graph.as_default():
+            feed = { self.x: features, self.y: labels }
+            for i in range(len(self.compute_gradients)):
+                self.gradients[i] += self.compute_gradients[i][0].eval(
+                    feed_dict=feed)
 
-                self.num_gradients += 1
-                #del feed
+            self.num_gradients += 1
+            #del feed
 
     def test(self, labels, features):
         with self.session.as_default():
-            with self.graph.as_default():
-                feed = { self.x: features, self.y: labels }
-                test_error_rate = self.error_rate.eval(feed_dict=feed)
-                #del feed
-                return test_error_rate
+            #with self.graph.as_default():
+            feed = { self.x: features, self.y: labels }
+            test_error_rate = self.error_rate.eval(feed_dict=feed)
+            #del feed
+            return test_error_rate
 
     def get_parameters(self):
         with self.session.as_default():
-            with self.graph.as_default():
-                result = [None] * len(self.compute_gradients)
-                for i in range(len(self.compute_gradients)):
-                    result[i] = self.compute_gradients[i][1].eval(
-                        session=self.session)
-                arr = np.array(result)
-                #del result[:]
-                #del result
-                return arr
+            #with self.graph.as_default():
+            result = [None] * len(self.compute_gradients)
+            for i in range(len(self.compute_gradients)):
+                result[i] = self.compute_gradients[i][1].eval(
+                    session=self.session)
+            arr = np.array(result)
+            #del result[:]
+            #del result
+            return arr
 
     def assign_parameters(self, parameters):
         with self.session.as_default():
-            with self.graph.as_default():
-                self.reset_gradients()
-                for i, grad_var in enumerate(self.compute_gradients):
-                    self.parameter_assignments[i].eval(
-                        feed_dict={ grad_var[0]: parameters[i] })
+            #with self.graph.as_default():
+            self.reset_gradients()
+            for i, grad_var in enumerate(self.compute_gradients):
+                self.parameter_assignments[i].eval(
+                    feed_dict={ grad_var[0]: parameters[i] })
 
     def apply(self, gradients):
         with self.graph.as_default():

@@ -54,21 +54,22 @@ class MnistDNN(ParameterServerModel):
         num_classes = self.get_num_classes()
         features = []
         labels = []
+        label = [0] * num_classes
         if batch_size == 0:
             batch_size = 1000000
         for line in data:
             if len(line) is 0:
                 print('Skipping empty line')
                 continue
-            label = [0] * num_classes
             split = line.split(',')
-            split[0] = int(split[0])
-            if split[0] >= num_classes:
-                print("Error label out of range: %d" % split[0])
+            split0 = int(split[0])
+            if split0 >= num_classes:
+                print('Error label out of range: %d' % split0)
                 continue
-            features.append(split[1:])
-            label[split[0]] = 1
+            features.append([int(s) for s in split[1:]])
+            label[split0] = 1
             labels.append(label)
+            label[split0] = 0
 
         return labels, features
 
