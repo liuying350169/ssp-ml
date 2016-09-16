@@ -74,6 +74,7 @@ class TensorSparkWorker(Borg):
     def request_parameters_coroutine(self):
         parameters = yield self.websock.read_message()
         parameters = self.model.deserialize(parameters)
+        self.model.assign_parameters(parameters)
 
     def time_to_pull(self, iteration):
         return iteration % 5 == 0
