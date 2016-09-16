@@ -1,5 +1,6 @@
 # parameterserverwebsocketclient.py
 import config
+import tornado.websocket
 from tornado import gen
 from tornado.ioloop import IOLoop
 import tensorflow as tf
@@ -16,7 +17,7 @@ class TensorSparkWorker(Borg):
 
         if 'model' not in self.__dict__:
             print('Creating new Borg worker')
-            self.model = config.MODEL(batch_size)
+            self.model = config.MODEL
         self.batch_size = batch_size
         self.websocket_port = websocket_port
         self.loop = IOLoop.current()
@@ -82,3 +83,4 @@ class TensorSparkWorker(Borg):
     def push_gradients_coroutine(self):
         serialized = self.model.serialize(self.model.get_gradients())
         self.websock.write_message(serialized, binary=True)
+

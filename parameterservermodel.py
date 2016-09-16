@@ -1,6 +1,7 @@
 # parameterservermodel.py
 import tensorflow as tf
 import numpy as np
+import time
 
 
 class ParameterServerModel():
@@ -83,7 +84,7 @@ class ParameterServerModel():
     def apply(self, gradients):
         with self.graph.as_default():
             feed_dict = {}
-            for i, grad_var = enumerate(self.compute_gradients):
+            for i, grad_var in enumerate(self.compute_gradients):
                 feed_dict[grad_var[0]] = gradients[i]
 
             self.apply_gradients.run(session=self.session, feed_dict=feed_dict)

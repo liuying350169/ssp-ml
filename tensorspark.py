@@ -1,6 +1,6 @@
 # tensorspark.py
 import config
-import parameterwebsocketclient
+import parameterserverwebsocketclient
 from operator import add
 import tornado.web
 import tornado.websocket
@@ -82,18 +82,16 @@ class ParameterServer(threading.Thread):
 
 def train_partition(partition):
     return parameterserverwebsocketclient.TensorSparkWorker(
-        config.MODEL_KEYWORD,
         config.BATCH_SIZE, config.WEBSOCKET_PORT).train_partition(partition)
 
 def test_partition(partition):
     return parameterserverwebsocketclient.TensorSparkWorker(
-        config.MODEL_KEYWORD,
         config.BATCH_SIZE, config.WEBSOCKET_PORT).test_partition(partition)
 
 def train_epochs(num_epochs, training_rdd, num_partitions):
     for i in range(num_epochs):
         print('training epoch %d' % i)
-        if REPARTITION:
+        if config.REPARTITION:
             training_rdd = training_rdd.repartition(num_partitions)
         mapped_training = training_rdd.mapPartitions(train_partition)
         # mapped_training should return `num_partitions` []'s
@@ -108,11 +106,12 @@ def test_all_partitions(sc):
 
 conf = pyspark.SparkConf() \
     .setMaster("spark://%s:%d" %
-        (config.SPARK_MASTER_IP, config.SPARK_MASTER_PORT))
+        (config.MASTER_IP, config.SPARK_MASTER_PORT)) \
     .setAppName(config.SPARK_APP_NAME)
 sc = pyspark.SparkContext()
 try:
     training_rdd = sc.textFile(config.TRAINING_RDD_FILENAME)
+    print('TRAINING_RDD_FILENAME: ', config.TRAINING_RDD_FILENAME)
     print('num partitions = %s' % training_rdd.getNumPartitions())
 
     warmup_data = training_rdd.take(config.WARMUP)
@@ -125,11 +124,11 @@ try:
 
     test_data = test_data_lines[0 : 100]
 
-    parameter_server = ts.ParameterServer(config.MODEL,
+    parameter_server = ParameterServer(config.MODEL,
         warmup_data,
         test_data)
 
-    ts.train_epochs(config.NUM_EPOCHS, training_rdd, config.NUM_PARTITIONS)
+    train_epochs(config.NUM_EPOCHS, training_rdd, config.NUM_PARTITIONS)
 
 finally:
     tornado.ioloop.IOLoop.current().stop()

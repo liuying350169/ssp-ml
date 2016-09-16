@@ -10,14 +10,14 @@ HDFS_PORT = 9000
 HDFS_DIRECTORY = '/mnist/'
 LOCAL_DIRECTORY = "/home/ubuntu/"
 ERROR_RATES_PATH = "/home/ubuntu/errors.txt"
-WEBSOCKET_PORT = random.randint(30000, 60000)  # or 30303
+WEBSOCKET_PORT = 30303  # random.randint(30000, 60000)
 MODEL_KEYWORD = 'mnist'
 
 if MODEL_KEYWORD == 'mnist':
-    TRAINING_RDD_FILENAME = os.path.join('hdfs://%s:%d' % (MASTER_IP, HDFS_PORT),
-        HDFS_DIRECTORY, 'mnist_train.csv')
-    TEST_FILENAME = os.path.join('hdfs://%s:%d' % (MASTER_IP, HDFS_PORT),
-        HDFS_DIRECTORY, 'mnist_test.csv')
+    TRAINING_RDD_FILENAME = ('hdfs://%s:%d' % (MASTER_IP, HDFS_PORT)) + \
+        os.path.join(HDFS_DIRECTORY, 'mnist_train.csv')
+    TEST_FILENAME = ('hdfs://%s:%d' % (MASTER_IP, HDFS_PORT)) + \
+        os.path.join(HDFS_DIRECTORY, 'mnist_test.csv')
     LOCAL_TEST_PATH = os.path.join(LOCAL_DIRECTORY, 'mnist_test.csv')
     NUM_PARTITIONS = 48
     NUM_EPOCHS = 2

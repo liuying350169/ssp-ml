@@ -16,6 +16,8 @@ def bias_variable(shape, name):
 
 class MnistDNN(ParameterServerModel):
     def __init__(self, batch_size, gpu=False):
+	session = tf.Session()
+
         self.gpu = gpu
         #self.batch_size = batch_size
         input_units = 784
@@ -23,7 +25,7 @@ class MnistDNN(ParameterServerModel):
         hidden_units = 700
 
         x = tf.placeholder('float32', shape=[None, input_units], name='x')
-        true_y = tf.placeholder('float32', shape=[None, output_units], name='y_')
+        true_y = tf.placeholder('float32', shape=[None, output_units], name='y')
 
         W_fc0 = weight_variable([input_units, hidden_units], 'W_fc0')
         b_fc0 = bias_variable([hidden_units], 'b_fc0')
@@ -35,7 +37,7 @@ class MnistDNN(ParameterServerModel):
         guess_y = tf.matmul(h_fc0, W_fc1) + b_fc1
 
         variables = [W_fc0, b_fc0, W_fc1, b_fc1]
-        loss = tf.nn.softmax_cross_entropy_with_logits(guess_y_dropout, true_y)
+        loss = tf.nn.softmax_cross_entropy_with_logits(guess_y, true_y)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
         compute_gradients = optimizer.compute_gradients(loss, variables)
