@@ -88,5 +88,7 @@ class TensorSparkWorker(Borg):
     @gen.coroutine
     def push_gradients_coroutine(self):
         serialized = self.model.serialize(self.model.get_gradients())
+        #print('sending serialized: %s' % serialized)
         self.websock.write_message(serialized, binary=True)
+        print('done sending serialized msg')
 

@@ -8,6 +8,7 @@ import tornado.ioloop
 import threading
 import tensorflow as tf
 import pyspark
+import time
 
 
 class ParameterServerWebsocketHandler(tornado.websocket.WebSocketHandler):
@@ -33,7 +34,7 @@ class ParameterServerWebsocketHandler(tornado.websocket.WebSocketHandler):
         time_sent = time_gradient[0][0]
 
         # Update (with atomic lock) and only if the gradient came "on-time"
-        if time.time() - time_sent < TIME_LAG:
+        if time.time() - time_sent < config.TIME_LAG:
             self.lock.acquire()
             gradient = time_gradient[1:]
             self.model.apply(gradient)
@@ -45,7 +46,7 @@ class ParameterServerWebsocketHandler(tornado.websocket.WebSocketHandler):
                     (self.server.gradient_count, error_rate))
                 with open(config.ERROR_RATES_PATH, 'a') as f:
                     f.write('%f, %d, %f\n' %
-                        (t, self.server.gradient_count, error_rate))
+                        (time.time(), self.server.gradient_count, error_rate))
             self.lock.release()
         else:
             print("rejected")
